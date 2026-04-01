@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SK 批量处理工具合集</title>
+    <link rel="icon" href="skhynix-icon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 24px;
+            color: #2d3748;
+            text-align: center;
+            font-weight: 600;
+        }
+        .main-container {
+            display: flex;
+            gap: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 700px;
+        }
+
+        /* ========== 左侧折叠菜单 ========== */
+        .sidebar {
+            width: 220px;
+            background: #ffffff;
+            border-radius: 12px 0 0 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            border-right: none;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .sidebar.collapsed {
+            width: 56px;
+        }
+        .collapse-btn {
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 11px 0 0 0;
+            transition: background 0.2s ease;
+        }
+        .collapse-btn:hover {
+            background: #1d4ed8;
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-btn {
+            padding: 16px 20px;
+            border: none;
+            background: white;
+            color: #4b5563;
+            font-size: 15px;
+            cursor: pointer;
+            text-align: left;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-btn.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            font-weight: 500;
+            border-left: 4px solid #2563eb;
+        }
+        .sidebar-btn:hover:not(.active) {
+            background-color: #f9fafb;
+            color: #1e40af;
+        }
+
+        /* ========== 右侧内容区 ========== */
+        .content-area {
+            flex: 1;
+            background: white;
+            border-radius: 0 12px 12px 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Lot 双栏工具 */
+        .lot-tools-container {
+            display: flex;
+            gap: 24px;
+        }
+        .lot-tool {
+            flex: 1;
+            min-width: 0;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 单独工具（数字补齐/PPD） */
+        .single-tool {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        /* ========== 通用工具样式 ========== */
+        h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            font-weight: 600;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            resize: vertical;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: #ffffff;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background-color: #2563eb;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            flex: 1;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        button.warn {
+            background-color: #f97316;
+        }
+        button.warn:hover {
+            background-color: #ea580c;
+        }
+        button.ok {
+            background-color: #10b981;
+        }
+        button.ok:hover {
+            background-color: #059669;
+        }
+        .result-box {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 16px;
+            min-height: 200px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .count-info {
+            color: #1e40af;
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .tip {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* 数字补齐工具特有样式（完全复用独立版样式） */
+        .num-fill-wrap {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .num-fill-desc {
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .num-fill-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .num-fill-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .num-fill-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .num-fill-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 8px 0 4px;
+        }
+        .num-fill-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .15s ease, border-color .15s ease, transform .02s ease;
+            user-select: none;
+            font-size: 13px;
+        }
+        .num-fill-btn:hover {
+            background: #e2e8f0;
+        }
+        .num-fill-btn:active {
+            transform: translateY(1px);
+        }
+        .num-fill-btn.ok {
+            background-color: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        .num-fill-btn.ok:hover {
+            background-color: #059669;
+        }
+        .num-fill-btn.warn {
+            background-color: #f97316;
+            color: white;
+            border-color: #f97316;
+        }
+        .num-fill-btn.warn:hover {
+            background-color: #ea580c;
+        }
+        .num-fill-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .num-fill-hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        .num-fill-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+        }
+        .num-fill-switch input {
+            appearance: none;
+            width: 38px;
+            height: 22px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            position: relative;
+            outline: none;
+            transition: background .15s ease;
+        }
+        .num-fill-switch input:checked {
+            background: rgba(37, 99, 235, 0.3);
+        }
+        .num-fill-switch input::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform .15s ease;
+        }
+        .num-fill-switch input:checked::after {
+            transform: translateX(16px);
+        }
+        .num-fill-stat {
+            font-size: 12px;
+            color: #64748b;
+            margin-left: 8px;
+        }
+        .num-fill-inline-code {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            color: #1e293b;
+            font-size: 12px;
+        }
+        .num-fill-sort-select {
+            background: white;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 8px;
+            font-size: 13px;
+            outline: none;
+        }
+        .num-fill-sort-select:focus {
+            border-color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>SK 批量处理工具合集</h1>
+
+    <div class="main-container">
+        <!-- 左侧折叠菜单 -->
+        <div class="sidebar" id="sidebar">
+            <button class="collapse-btn" id="collapseBtn">←</button>
+            <div class="sidebar-menu">
+                <button class="sidebar-btn active" data-tab="lot-tools">Lot批量处理</button>
+                <button class="sidebar-btn" data-tab="num-tools">Wafers补齐</button>
+                <button class="sidebar-btn" data-tab="ppd-tools">PPD格式转换</button>
+            </div>
+        </div>
+
+        <!-- 右侧内容区 -->
+        <div class="content-area">
+            <!-- Lot批量处理（双栏） -->
+            <div class="tab-panel active" id="lot-tools">
+                <div class="lot-tools-container">
+                    <!-- 工具1：提取Lot -->
+                    <div class="lot-tool">
+                        <h2>提取批量Lot</h2>
+                        <textarea id="extractInput" placeholder="请输入需要提取的内容，每行一个（例如：
+K5329110: 046/048/049/075
+K542131A(104)
+K5491980_W417
+K6485900 / K5486060 / K5485900 / K5487060）"></textarea>
+                        <div class="btn-group">
+                            <button id="extractBtn">提取Lot</button>
+                            <button id="copyExtractBtn" class="ok">复制</button>
+                            <button id="clearExtractBtn" class="warn">清空</button>
+                        </div>
+                        
+                        <div id="extractCount" class="count-info"></div>
+                        <div id="extractResult" class="result-box"></div>
+                        <p class="tip">提示：自动提取并去重每行中的所有lot，支持处理冒号/括号/下划线/多Lot同行场景</p>
+                    </div>
+
+                    <!-- 工具2：加引号 -->
+                    <div class="lot-tool">
+                        <h2>Lot批量添加单引号</h2>
+                        <textarea id="inputText" placeholder="请输入需要处理的内容，每行一个（例如：
+K547598A
+K5496240
+K5486220
+K547621B
+）"></textarea>
+                        <div class="btn-group">
+                            <button id="convertBtn">转换Lot</button>
+                            <button id="copyBtn" class="ok">复制</button>
+                            <button id="clearBtn" class="warn">清空</button>
+                        </div>
+                        
+                        <div id="convertCount" class="count-info"></div>
+                        <div id="result" class="result-box"></div>
+                        <p class="tip">自动添加 ', 引号</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数字补齐（完全替换为独立版功能） -->
+            <div class="tab-panel" id="num-tools">
+                <div class="single-tool">
+                    <h2>Wafers补齐小工具（连号分组，左补零到3位）</h2>
+                    <div class="num-fill-wrap">
+                        <div class="num-fill-desc">
+                            将输入中的<strong>连续数字</strong>当作一组，<strong>左侧填充</strong>到至少 <span class="num-fill-inline-code">3</span> 位，不足补 <span class="num-fill-inline-code">0</span>，并用英文逗号 <span class="num-fill-inline-code">,</span> 连接。原有的标点、空格等非数字字符仅作为分隔忽略。<br/>
+                            例如：<span class="num-fill-inline-code">" 12, 3..456-78_ 9 "</span> → <span class="num-fill-inline-code">012,003,456,078,009</span>
+                        </div>
+
+                        <div class="num-fill-card">
+                            <div class="num-fill-row">
+                                <div>
+                                    <div class="num-fill-label">输入</div>
+                                    <textarea id="numFillInput" placeholder="在此粘贴/输入要处理的文本… 例如： 12, 3..456-78_ 9"></textarea>
+                                    <div class="num-fill-controls">
+                                        <label class="num-fill-switch">
+                                            <input id="split3" type="checkbox" />
+                                            <span>每 3 位切分（可选）</span>
+                                        </label>
+                                        <span class="num-fill-stat" id="statIn">0 字符</span>
+                                    </div>
+                                    <div class="num-fill-hint">默认不切分：如 <span class="num-fill-inline-code">12345</span> 将保留为 <span class="num-fill-inline-code">12345</span>；勾选后变为 <span class="num-fill-inline-code">012,345</span>。</div>
+                                </div>
+
+                                <div>
+                                    <div class="num-fill-label">输出</div>
+                                    <textarea id="numFillOutput" class="num-fill-mono" readonly placeholder="结果将在此显示…"></textarea>
+                                    <div class="num-fill-controls">
+                                        <button id="copyNumFillBtn" class="num-fill-btn ok">复制结果</button>
+                                        <button id="clearNumFillBtn" class="num-fill-btn warn">清空</button>
+                                        <label class="num-fill-switch" style="gap:6px">
+                                            <span>排序</span>
+                                            <select id="sortMode" class="num-fill-sort-select">
+                                                <option value="none">不排序</option>
+                                                <option value="asc">升序</option>
+                                                <option value="desc">降序</option>
+                                            </select>
+                                        </label>
+                                        <span class="num-fill-stat" id="statOut">0 组</span>
+                                    </div>
+                                    <div class="num-fill-hint">当输入中没有数字时，输出为空。</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="num-fill-card">
+                            <div class="num-fill-label">快速示例</div>
+                            <div class="num-fill-controls">
+                                <button class="num-fill-btn" data-demo=' 12, 3..456-78_ 9 '>示例 1</button>
+                                <button class="num-fill-btn" data-demo='abc001def2ghij90'>示例 2</button>
+                                <button class="num-fill-btn" data-demo='0007'>示例 3</button>
+                                <button class="num-fill-btn" data-demo='，。、； 1 23 456！'>示例 4</button>
+                                <button class="num-fill-btn" data-demo='no digits here'>示例 5（无数字）</button>
+                                <button class="num-fill-btn" data-demo='12345 67,8'>示例 6（长数字）</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PPD格式转换（独立页面） -->
+            <div class="tab-panel" id="ppd-tools">
+                <div class="single-tool">
+                    <h2>PPD格式转换</h2>
+                    <textarea id="ppdInputText" placeholder="请输入需要提取的内容，每行一个（例如：
+K1234560_245
+K2316540_106,107,109,110,084,085,086,087,88）"></textarea>
+                    <div class="btn-group">
+                        <button id="ppdConvertBtn">转换格式</button>
+                        <button id="ppdCopyBtn" class="ok">复制结果</button>
+                        <button id="ppdClearBtn" class="warn">清空内容</button>
+                    </div>
+                    
+                    <div id="ppdConvertCount" class="count-info"></div>
+                    <div id="ppdResult" class="result-box"></div>
+                    <p class="tip">自动拆分lot并转为双引号格式，自动补齐前导0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 左侧菜单折叠/展开 ==========
+        const sidebar = document.getElementById('sidebar');
+        const collapseBtn = document.getElementById('collapseBtn');
+        collapseBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            collapseBtn.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
+        });
+
+        // ========== 菜单切换 ==========
+        const sidebarBtns = document.querySelectorAll('.sidebar-btn');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+        sidebarBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                sidebarBtns.forEach(b => b.classList.remove('active'));
+                tabPanels.forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const target = btn.getAttribute('data-tab');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        // ==================== 1. 加引号功能 ====================
+        const inputText = document.getElementById('inputText');
+        const result = document.getElementById('result');
+        const convertCount = document.getElementById('convertCount');
+        const convertBtn = document.getElementById('convertBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        convertBtn.addEventListener('click', function() {
+            const input = inputText.value.trim();
+            if (!input) { 
+                result.textContent = '请输入内容！'; 
+                convertCount.textContent = ''; 
+                return; 
+            }
+            const lines = input.split(/\r?\n/);
+            const processed = []; 
+            let count=0;
+            lines.forEach(line=>{ 
+                const t=line.trim(); 
+                if(t){
+                    processed.push(`'${t}'`); 
+                    count++;
+                } 
+            });
+            result.textContent = processed.join(',\n');
+            convertCount.textContent = `✅ 转换 ${count} 行`;
+        });
+        
+        copyBtn.addEventListener('click',async()=>{
+            try{
+                await navigator.clipboard.writeText(result.textContent); 
+                alert('复制成功！');
+            } catch(e){
+                const t=document.createElement('textarea');
+                t.value=result.textContent;
+                document.body.appendChild(t);
+                t.select();
+                document.execCommand('copy');
+                document.body.removeChild(t);
+                alert('复制成功！');
+            }
+        });
+        
+        clearBtn.addEventListener('click',()=>{
+            inputText.value='';
+            result.textContent='';
+            convertCount.textContent='';
+        });
+
+        // ==================== 2. 提取Lot功能 ====================
+        const extractInput = document.getElementById('extractInput');
+        const extractResult = document.getElementById('extractResult');
+        const extractCount = document.getElementById('extractCount');
+        const extractBtn = document.getElementById('extractBtn');
+        const copyExtractBtn = document.getElementById('copyExtractBtn');
+        const clearExtractBtn = document.getElementById('clearExtractBtn');
+        
+        extractBtn.addEventListener('click',function(){
+            const input=extractInput.value.trim(); 
+            if(!input){
+                extractResult.textContent='请输入内容！';
+                extractCount.textContent='';
+                return;
+            }
+            const s=new Set();
+            input.split(/\r?\n/).forEach(line=>{ 
+                const m=line.match(/K[A-Z0-9]+/g); 
+                if(m)m.forEach(x=>s.add(x)); 
+            });
+            const arr=Array.from(s);
+            extractResult.textContent=arr.join('\n');
+            extractCount.textContent=`✅ 提取 ${arr.length} 个不重复Lot`;
+        });
+        
+        copyExtractBtn.addEventListener('click',async()=>{
+            try{
+                await navigator.clipboard.writeText(extractResult.textContent);
+                alert('复制成功！');
+            } catch(e){
+                const t=document.createElement('textarea');
+                t.value=extractResult.textContent;
+                document.body.appendChild(t);
+                t.select();
+                document.execCommand('copy');
+                document.body.removeChild(t);
+                alert('复制成功！');
+            }
+        });
+        
+        clearExtractBtn.addEventListener('click',()=>{
+            extractInput.value='';
+            extractResult.textContent='';
+            extractCount.textContent='';
+        });
+
+        // ==================== 3. PPD格式转换（修改后的逻辑） ====================
+        const ppdInputText = document.getElementById('ppdInputText');
+        const ppdResult = document.getElementById('ppdResult');
+        const ppdConvertCount = document.getElementById('ppdConvertCount');
+        const ppdConvertBtn = document.getElementById('ppdConvertBtn');
+        const ppdCopyBtn = document.getElementById('ppdCopyBtn');
+        const ppdClearBtn = document.getElementById('ppdClearBtn');
+        
+        ppdConvertBtn.addEventListener('click',function(){
+            const input=ppdInputText.value.trim(); 
+            if(!input){
+                ppdResult.textContent='请输入内容！';
+                ppdConvertCount.textContent='';
+                return;
+            }
+            
+            // 处理每行数据
+            const processedLines = [];
+            let totalCount = 0;
+            
+            input.split(/\r?\n/).forEach(line=>{
+                const trimLine = line.trim();
+                if(!trimLine) return;
+                
+                // 拆分Lot前缀和数字部分（匹配K开头+数字字母_格式）
+                const lotMatch = trimLine.match(/(K[A-Z0-9]+_)(.*)/);
+                if(lotMatch) {
+                    const lotPrefix = lotMatch[1]; // 例如 K1234560_
+                    const numPart = lotMatch[2];   // 例如 106,107,88
+                    
+                    // 拆分数字并补零到3位
+                    const numArray = numPart.split(/,/).map(num => {
+                        const trimNum = num.trim();
+                        return trimNum.padStart(3, '0'); // 88→088, 8→008
+                    }).filter(Boolean); // 过滤空值
+                    
+                    // 重组该行数据
+                    const processedLine = `${lotPrefix}${numArray.join(',')}`;
+                    processedLines.push(`"${processedLine}"`);
+                    totalCount++;
+                } else {
+                    // 没有下划线的情况，直接包裹双引号
+                    processedLines.push(`"${trimLine}"`);
+                    totalCount++;
+                }
+            });
+            
+            // 拼接最终结果
+            ppdResult.textContent = processedLines.join(', ');
+            ppdConvertCount.textContent = `✅ 处理 ${totalCount} 个Lot`;
+        });
+        
+        ppdCopyBtn.addEventListener('click',async()=>{
+            try{
+                await navigator.clipboard.writeText(ppdResult.textContent);
+                alert('复制成功！');
+            } catch(e){
+                const t=document.createElement('textarea');
+                t.value=ppdResult.textContent;
+                document.body.appendChild(t);
+                t.select();
+                document.execCommand('copy');
+                document.body.removeChild(t);
+                alert('复制成功！');
+            }
+        });
+        
+        ppdClearBtn.addEventListener('click',()=>{
+            ppdInputText.value='';
+            ppdResult.textContent='';
+            ppdConvertCount.textContent='';
+        });
+
+        // ==================== 4. 数字补齐功能（完全替换为独立版逻辑） ====================
+        function formatGroups(input, { splitEvery3 = false } = {}) {
+            const groups = input.match(/\d+/g) || [];
+            const out = [];
+            for (const g of groups) {
+                if (!splitEvery3) {
+                    out.push(g.padStart(3, '0'));
+                } else {
+                    const parts = [];
+                    for (let i = g.length; i > 0; i -= 3) {
+                        const start = Math.max(i - 3, 0);
+                        parts.unshift(g.slice(start, i));
+                    }
+                    if (parts.length === 0) continue;
+                    if (parts[0].length < 3) {
+                        const need = 3 - parts[0].length;
+                        const padded = '0'.repeat(need) + g;
+                        const parts2 = [];
+                        for (let i = padded.length; i > 0; i -= 3) {
+                            const start = Math.max(i - 3, 0);
+                            parts2.unshift(padded.slice(start, i));
+                        }
+                        out.push(...parts2);
+                    } else {
+                        out.push(...parts);
+                    }
+                }
+            }
+            return out.join(',');
+        }
+
+        function sortChunks(chunks, mode){
+            if(mode === 'none') return chunks;
+            const withKey = chunks.map((v,i)=>({ 
+                v, i, key: Number(v.replace(/^0+/,'')) || 0 
+            }));
+            withKey.sort((a,b)=> a.key===b.key ? a.i-b.i : (mode==='asc' ? a.key-b.key : b.key-a.key));
+            return withKey.map(x=>x.v);
+        }
+
+        const $in = document.getElementById('numFillInput');
+        const $out = document.getElementById('numFillOutput');
+        const $copy = document.getElementById('copyNumFillBtn');
+        const $clear = document.getElementById('clearNumFillBtn');
+        const $statIn = document.getElementById('statIn');
+        const $statOut = document.getElementById('statOut');
+        const $split3 = document.getElementById('split3');
+        const $sortMode = document.getElementById('sortMode');
+
+        function refreshNumFill() {
+            const splitEvery3 = $split3.checked;
+            const inputVal = $in.value || '';
+            const resRaw = formatGroups(inputVal, { splitEvery3 });
+            const chunks = resRaw ? resRaw.split(',').filter(Boolean) : [];
+            const sorted = sortChunks(chunks, $sortMode.value);
+            const res = sorted.join(',');
+            
+            $out.value = res;
+            $statIn.textContent = `${inputVal.length} 字符`;
+            $statOut.textContent = `${chunks.length} 组`;
+        }
+
+        // 输入与开关变化时实时更新
+        $in.addEventListener('input', refreshNumFill);
+        $split3.addEventListener('change', refreshNumFill);
+        $sortMode.addEventListener('change', refreshNumFill);
+
+        // 复制功能
+        $copy.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText($out.value || '');
+                const old = $copy.textContent;
+                $copy.textContent = '已复制';
+                setTimeout(() => ($copy.textContent = old), 900);
+            } catch {
+                $out.select();
+                alert('已选中输出文本，请使用 Ctrl/Cmd + C 复制。');
+            }
+        });
+
+        // 清空
+        $clear.addEventListener('click', () => {
+            $in.value = '';
+            $out.value = '';
+            refreshNumFill();
+        });
+
+        // 示例按钮
+        document.querySelectorAll('[data-demo]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                $in.value = btn.getAttribute('data-demo');
+                refreshNumFill();
+            });
+        });
+
+        // 初始渲染
+        refreshNumFill();
+    </script>
+</body>
+</html>
