@@ -382,6 +382,7 @@ K5491980_W417
 K6485900 / K5486060 / K5485900 / K5487060）"></textarea>
                         <div class="btn-group">
                             <button id="extractBtn">提取Lot</button>
+                            <button onclick="mergeLotWafer()">Lot + Wafer 合并</button>
                             <button id="copyExtractBtn" class="ok">复制</button>
                             <button id="clearExtractBtn" class="warn">清空</button>
                         </div>
@@ -685,7 +686,54 @@ K2316540_106,107,109,110,084,085,086,087,88）"></textarea>
             ppdResult.textContent='';
             ppdConvertCount.textContent='';
         });
+/* ✅ 新增：Lot + Wafer 合并（适配工具1） */
+function mergeLotWafer() {
+    const input = document.getElementById('extractInput').value.trim();
+    const outputEl = document.getElementById('extractResult');
+    const countEl = document.getElementById('extractCount');
 
+    if (!input) {
+        outputEl.textContent = '请输入 Lot + Wafer 内容！';
+        countEl.textContent = '';
+        return;
+    }
+
+    const lines = input
+        .split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(Boolean);
+
+    const map = {};
+
+    lines.forEach(line => {
+        // 支持 Tab / 多空格
+        const parts = line.split(/\s+/);
+        if (parts.length < 2) return;
+
+        const lot = parts[0];
+        let wafer = parts[1].padStart(3, '0');
+
+        if (!map[lot]) {
+            map[lot] = [];
+        }
+
+        if (!map[lot].includes(wafer)) {
+            map[lot].push(wafer);
+        }
+    });
+
+    const resultLines = Object.keys(map).map(lot => {
+        return `${lot} ${map[lot].join(',')}`;
+    });
+
+    if (resultLines.length > 0) {
+        outputEl.textContent = resultLines.join('\n');
+        countEl.textContent = `✅ 共合并 ${resultLines.length} 个 Lot`;
+    } else {
+        outputEl.textContent = '未识别到有效的 Lot + Wafer 数据';
+        countEl.textContent = '';
+    }
+}
         // ==================== 4. 数字补齐功能（完全替换为独立版逻辑） ====================
         function formatGroups(input, { splitEvery3 = false } = {}) {
             const groups = input.match(/\d+/g) || [];
